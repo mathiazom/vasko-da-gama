@@ -35,9 +35,9 @@ def get_weeks_cleaners():
     current_week = int(datetime.datetime.today().strftime("%V"))
     with open('gamaslist.csv', mode='r') as file:
         for lines in csv.reader(file):
-            if lines[1] == COMMUNAL:
-                return COMMUNAL
             if int(lines[0]) == current_week:
+                if lines[1] == COMMUNAL:
+                    return COMMUNAL
                 return lines[1], lines[2]
 
 
