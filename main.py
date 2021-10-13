@@ -2,8 +2,12 @@ import os
 
 import requests
 import datetime
+import time
 import csv
+
 from dotenv import load_dotenv
+
+from utils import readable_delta
 
 load_dotenv()
 
@@ -17,10 +21,10 @@ def next_of_weekday(today, weekday):
     return today + datetime.timedelta((weekday - today.isoweekday()) % 7)
 
 
-def datetime_from_schedule(schedule_options):
-    return \
-        next_of_weekday(datetime.datetime.today(), schedule_options['weekday']) \
-            .replace(**schedule_options['time'])
+def timestamp_for_message(message_options):
+    schedule_date = next_of_weekday(datetime.datetime.today(), message_options['weekday'])
+    schedule_datetime = schedule_date.replace(**message_options['time'])
+    return int(schedule_datetime.timestamp())
 
 
 def get_random_fun_fact():
@@ -39,45 +43,85 @@ def get_weeks_cleaners():
                 if lines[1] == COMMUNAL:
                     return COMMUNAL
                 return lines[1], lines[2]
+    return None
+
+
+def is_scheduled(message_options):
+    timestamp = timestamp_for_message(message_options)
+    res = requests.post(
+        "https://slack.com/api/chat.scheduledMessages.list",
+        headers={'Authorization': f'Bearer {BOT_TOKEN}'},
+        json={
+            "channel": CHANNEL_ID,
+            "oldest": timestamp,
+            "latest": timestamp
+        }
+    )
+    if not res.ok:
+        print(f"[FAILED] Could not check scheduled messages: {res.text}")
+        return True  # pretend that message is already schedule to avoid message explosion...
+    return len(res.json()['scheduled_messages']) > 0
 
 
 def schedule_message(message_options):
-    print(requests.post(
+    print(f"[INFO] Scheduling message:\n{message_options}")
+    timestamp = timestamp_for_message(message_options)
+    res = requests.post(
         "https://slack.com/api/chat.scheduleMessage",
         headers={'Authorization': f'Bearer {BOT_TOKEN}'},
         json={
             "channel": CHANNEL_ID,
             "text": message_options['text'],
-            "post_at": int(datetime_from_schedule(message_options).timestamp())
-        }).text)
+            "post_at": timestamp
+        })
+    if not res.ok:
+        print(f"[FAILED] Could not schedule message: {res.text}")
+        return
+    print(f"[INFO] Message scheduled successfully. Will be sent in {readable_delta(timestamp - int(time.time()))}.")
 
 
-cleaners = get_weeks_cleaners()
-schedule_message({
-    'weekday': 5,
-    'time': {
-        'hour': 13, 'minute': 37, 'second': 0, 'microsecond': 0
-    },
-    'text': "⏲🧹\n" +
-            (
-                f"Ukens vaskere er <@{cleaners[0]}> og <@{cleaners[1]}>.\n"
-                if cleaners != COMMUNAL else
-                "Denne uken er det fellesvask <!channel>!"
-            ) +
-            "\n\n"
-            f"> {get_random_fun_fact()}"
-})
-schedule_message({
-    'weekday': 7,
-    'time': {
-        'hour': 12, 'minute': 0, 'second': 0, 'microsecond': 0
-    },
-    'text': "🧹🧼✨\n" +
-            (
-                f"<@{cleaners[0]}> og <@{cleaners[1]}>, husk at dere er ukens beærede vaskere!\n"
-                if cleaners != COMMUNAL else
-                "Minner om fellesvask denne uken <!channel>!"
-            ) +
-            "\n\n"
-            f"> {get_random_dad_joke()}"
-})
+def schedule_reminders():
+    cleaners = get_weeks_cleaners()
+    print(f"[INFO] This weeks cleaners: {cleaners}")
+    if cleaners is None:
+        print("[FAILED] No cleaners found")
+        return
+    messages = [
+        {
+            'weekday': 5,
+            'time': {
+                'hour': 13, 'minute': 37, 'second': 0, 'microsecond': 0
+            },
+            'text': "⏲🧹\n" +
+                    (
+                        f"Ukens vaskere er <@{cleaners[0]}> og <@{cleaners[1]}>."
+                        if cleaners != COMMUNAL else
+                        "Denne uken er det fellesvask <!channel>!"
+                    ) +
+                    "\n\n"
+                    f"> {get_random_fun_fact()}"
+        },
+        {
+            'weekday': 7,
+            'time': {
+                'hour': 12, 'minute': 0, 'second': 0, 'microsecond': 0
+            },
+            'text': "🧹🧼✨\n" +
+                    (
+                        f"<@{cleaners[0]}> og <@{cleaners[1]}>, husk at dere er ukens beærede vaskere!"
+                        if cleaners != COMMUNAL else
+                        "Minner om fellesvask denne uken <!channel>!"
+                    ) +
+                    "\n\n"
+                    f"> {get_random_dad_joke()}"
+        }
+    ]
+    for m in messages:
+        if is_scheduled(m):
+            print("[WARNING] Message already scheduled, skipping.")
+            return
+        schedule_message(m)
+
+
+if __name__ == '__main__':
+    schedule_reminders()
