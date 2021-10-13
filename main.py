@@ -13,16 +13,6 @@ CHANNEL_ID = os.environ['CHANNEL_ID']
 COMMUNAL = "Fellesvask"
 
 
-def post_message():
-    requests.post(
-        "https://slack.com/api/chat.postMessage",
-        headers={'Authorization': f'Bearer {BOT_TOKEN}'},
-        json={
-            "channel": "C02GN6PLMBR",
-            "text": "Hello world :tada:"
-        })
-
-
 def next_of_weekday(today, weekday):
     return today + datetime.timedelta((weekday - today.isoweekday()) % 7)
 
