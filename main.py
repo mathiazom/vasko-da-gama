@@ -57,7 +57,7 @@ def is_scheduled(message_options):
             "latest": timestamp
         }
     )
-    if not res.ok:
+    if not (res.ok and res.json()['ok']):
         print(f"[FAILED] Could not check scheduled messages: {res.text}")
         return True  # pretend that message is already schedule to avoid message explosion...
     return len(res.json()['scheduled_messages']) > 0
@@ -74,7 +74,7 @@ def schedule_message(message_options):
             "text": message_options['text'],
             "post_at": timestamp
         })
-    if not res.ok:
+    if not (res.ok and res.json()['ok']):
         print(f"[FAILED] Could not schedule message: {res.text}")
         return
     print(f"[INFO] Message scheduled successfully. Will be sent in {readable_delta(timestamp - int(time.time()))}.")
