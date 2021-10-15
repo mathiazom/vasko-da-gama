@@ -117,6 +117,10 @@ def schedule_reminders():
         }
     ]
     for m in messages:
+        timestamp = timestamp_for_message(m)
+        if timestamp < time.time():
+            print("[WARNING] Scheduled time is in the past, skipping message.")
+            continue
         if is_scheduled(m):
             print("[WARNING] Message already scheduled, skipping.")
             continue
