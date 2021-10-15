@@ -7,12 +7,14 @@ import csv
 
 from dotenv import load_dotenv
 
-from utils import readable_delta
+from utils import readable_delta, write_checkpoint_file
 
 load_dotenv()
 
 BOT_TOKEN = os.environ['BOT_TOKEN']
 CHANNEL_ID = os.environ['CHANNEL_ID']
+
+CHECKPOINTS_DIR = os.getenv('CHECKPOINTS_DIR', 'checkpoints')
 
 COMMUNAL = "Fellesvask"
 
@@ -78,6 +80,7 @@ def schedule_message(message_options):
         print(f"[FAILED] Could not schedule message: {res.text}")
         return
     print(f"[INFO] Message scheduled successfully. Will be sent in {readable_delta(timestamp - int(time.time()))}.")
+    write_checkpoint_file(CHECKPOINTS_DIR)
 
 
 def schedule_reminders():
