@@ -126,6 +126,7 @@ def schedule_reminders():
             continue
         if is_scheduled(m):
             print("[WARNING] Message already scheduled, skipping.")
+            write_checkpoint_file(CHECKPOINTS_DIR)
             continue
         schedule_message(m)
 
