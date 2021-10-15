@@ -119,7 +119,7 @@ def schedule_reminders():
     for m in messages:
         if is_scheduled(m):
             print("[WARNING] Message already scheduled, skipping.")
-            return
+            continue
         schedule_message(m)
 
 
