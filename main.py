@@ -14,6 +14,8 @@ load_dotenv()
 
 BOT_TOKEN = os.environ['BOT_TOKEN']
 CHANNEL_ID = os.environ['CHANNEL_ID']
+TRANSFER_SH_URL = os.environ['TRANSFER_SH_URL']
+CAT_API_KEY = os.environ['CAT_API_KEY']
 
 CHECKPOINTS_DIR = os.getenv('CHECKPOINTS_DIR', 'checkpoints')
 

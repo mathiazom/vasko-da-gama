@@ -31,6 +31,7 @@ def schedule_message(message_options):
         json={
             "channel": CHANNEL_ID,
             "text": message_options['text'],
+            "attachments": message_options['attachments'],
             "post_at": timestamp
         })
     if not (res.ok and res.json()['ok']):
