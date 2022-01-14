@@ -97,9 +97,9 @@ def schedule_reminders():
             },
             'text': "⏲🧹\n" +
                     (
-                        f"Ukens vaskere er <@{cleaners[0]}> og <@{cleaners[1]}>."
+                        f"Ukas vaskere er <@{cleaners[0]}> og <@{cleaners[1]}>."
                         if cleaners != COMMUNAL else
-                        "Denne uken er det fellesvask <!channel>!"
+                        "Denne uka er det fellesvask <!channel>!"
                     ) +
                     "\n\n"
                     f"> {get_random_fun_fact()}"
@@ -111,9 +111,9 @@ def schedule_reminders():
             },
             'text': "🧹🧼✨\n" +
                     (
-                        f"<@{cleaners[0]}> og <@{cleaners[1]}>, husk at dere er ukens beærede vaskere!"
+                        f"<@{cleaners[0]}> og <@{cleaners[1]}>, husk at dere er ukas beærede vaskere!"
                         if cleaners != COMMUNAL else
-                        "Minner om fellesvask denne uken <!channel>!"
+                        "Minner om fellesvask denne uka <!channel>!"
                     ) +
                     "\n\n"
                     f"> {get_random_dad_joke()}"
