@@ -4,6 +4,10 @@ import os
 from dateutil.relativedelta import relativedelta as rd
 
 
+def next_of_weekday(today, weekday):
+    return today + datetime.timedelta((weekday - today.isoweekday()) % 7)
+
+
 def readable_delta(seconds):
     if seconds < 60:
         return "less than a minute"
