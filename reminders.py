@@ -3,6 +3,7 @@ from fun import get_non_existent_cat, get_real_cat
 
 def reminder_messages(cleaners, is_communal):
     real_cat = get_real_cat()
+    non_existent_cat = get_non_existent_cat()
     return {
         'alpha': {
             'text': "⏲🧹\n" +
@@ -16,9 +17,9 @@ def reminder_messages(cleaners, is_communal):
                     "fallback": "Ukas ikke-eksisterende katt",
                     "pretext": "Ukas ikke-eksisterende katt:",
                     "color": "#039BE5",
-                    "image_url": get_non_existent_cat()
+                    "image_url": non_existent_cat
                 }
-            ]
+            ] if non_existent_cat is not None else None
         },
         'beta': {
             'text': "🧹🧼✨\n" +
