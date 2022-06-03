@@ -26,15 +26,35 @@ def get_weeks_cleaners():
     return None
 
 
+def get_chores(is_communal):
+    if "chores" not in config:
+        return None
+    chores = []
+    if is_communal:
+        if "communal" not in config.chores:
+            return None
+        with open(config.chores.communal, mode='r') as file:
+            chores.append(file.read())
+    else:
+        if "pair" not in config.chores:
+            return None
+        for chores_file in config.chores.pair:
+            with open(chores_file, mode='r') as file:
+                chores.append(file.read())
+    return chores
+
+
 def get_reminder(reminder_id):
     cleaners = get_weeks_cleaners()
     if cleaners is None:
         print("[FAILED] No cleaners found")
-        return
+        return None
     print(f"[INFO] This weeks cleaners: {cleaners}")
+    is_communal = cleaners == config.communal_keyword
     return reminder_messages(
         cleaners,
-        cleaners == config.communal_keyword
+        is_communal,
+        get_chores(is_communal)
     )[reminder_id]
 
 
