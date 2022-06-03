@@ -1,12 +1,14 @@
 import sys
+from typing import Optional
+
 from config import Config
 from definitions import APP_ROOT
 
 
-def generate_cron_job(reminder_id, reminder_schedule, reminder_method, cron_config):
+def generate_cron_job(reminder_id, reminder_schedule, reminder_method, cron_config) -> Optional[str]:
     if len(sys.argv) < 1:
         print("[ERROR] No output file path provided")
-        return
+        return None
     return (
         f"{reminder_schedule} "
         f"cd {cron_config.vasko_dir} || exit 1; PATH=$PATH:/usr/local/bin "
@@ -30,7 +32,9 @@ def main():
         else:
             print(f"[FAIL] Invalid reminders method '{method}")
             return
-        crontab += generate_cron_job(reminder_id, cron_schedule, method, config.cron)
+        cronjob = generate_cron_job(reminder_id, cron_schedule, method, config.cron)
+        if cronjob is not None:
+            crontab += cronjob
     with open(sys.argv[1], "w+") as cron_file:
         cron_file.write(crontab)
 

@@ -1,7 +1,7 @@
 import requests
 
 
-def post_reminder(token, channel, reminder):
+def post_reminder(token, channel, reminder) -> bool:
     print(f"[INFO] Posting reminder:\n{reminder}")
     res = requests.post(
         "https://slack.com/api/chat.postMessage",
@@ -33,7 +33,7 @@ def post_reminder(token, channel, reminder):
     return True
 
 
-def post_reminder_chores(token, channel, parent_message_ts, text):
+def post_reminder_chores(token, channel, parent_message_ts, text) -> bool:
     print(f"[INFO] Posting reminder chores: {text}")
     res = requests.post(
         "https://slack.com/api/chat.postMessage",
@@ -41,8 +41,7 @@ def post_reminder_chores(token, channel, parent_message_ts, text):
         json={
             "channel": channel,
             "thread_ts": parent_message_ts,
-            "text": text,
-            # "attachments": reminder['attachments']
+            "text": text
         })
     if not res.ok:
         print(f"[FAILED] Could not post reminder chores: {res.text}")

@@ -5,7 +5,7 @@ import requests
 from utils import readable_delta, timestamp_for_message_schedule
 
 
-def is_scheduled(token, channel, timestamp):
+def is_scheduled(token, channel, timestamp) -> bool:
     res = requests.post(
         "https://slack.com/api/chat.scheduledMessages.list",
         headers={'Authorization': f'Bearer {token}'},
@@ -21,7 +21,7 @@ def is_scheduled(token, channel, timestamp):
     return len(res.json()['scheduled_messages']) > 0
 
 
-def schedule_message(token, channel, message_options):
+def schedule_message(token, channel, message_options) -> bool:
     print(f"[INFO] Scheduling message:\n{message_options}")
     timestamp = timestamp_for_message_schedule(message_options['schedule'])
     res = requests.post(

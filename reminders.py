@@ -1,7 +1,9 @@
+from typing import Dict, Any, List, Optional
+
 from fun import get_non_existent_cat, get_real_cat
 
 
-def get_chores_messages(cleaners, is_communal, chores):
+def get_chores_messages(cleaners, is_communal, chores) -> Optional[List[str]]:
     if chores is None:
         return None
     if is_communal:
@@ -9,7 +11,7 @@ def get_chores_messages(cleaners, is_communal, chores):
     return [f"<@{cleaners[i]}>\n{chores[i]}" for i in [0, 1]]
 
 
-def reminder_messages(cleaners, is_communal, chores):
+def reminder_messages(cleaners, is_communal, chores) -> Dict[str, Any]:
     real_cat = get_real_cat()
     non_existent_cat = get_non_existent_cat()
     chores_messages = get_chores_messages(cleaners, is_communal, chores)

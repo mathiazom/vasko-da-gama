@@ -1,20 +1,21 @@
 import datetime
 import os
+from typing import Dict, Any
 
 from dateutil.relativedelta import relativedelta as rd
 
 
-def next_of_weekday(today, weekday):
+def next_of_weekday(today: datetime.datetime, weekday: int) -> datetime.datetime:
     return today + datetime.timedelta((weekday - today.isoweekday()) % 7)
 
 
-def timestamp_for_message_schedule(message_schedule):
+def timestamp_for_message_schedule(message_schedule: Dict[str, Any]) -> int:
     schedule_date = next_of_weekday(datetime.datetime.today(), message_schedule['weekday'])
     schedule_datetime = schedule_date.replace(**message_schedule['time'])
     return int(schedule_datetime.timestamp())
 
 
-def readable_delta(seconds):
+def readable_delta(seconds: int) -> str:
     if seconds < 60:
         return "less than a minute"
     delta = rd(seconds=seconds)
@@ -37,8 +38,8 @@ def readable_delta(seconds):
 
 
 # Create an empty file to mark a successful run
-def write_checkpoint_file(dir):
-    if not os.path.isdir(dir):
-        os.mkdir(dir)
+def write_checkpoint_file(directory: str) -> None:
+    if not os.path.isdir(directory):
+        os.mkdir(directory)
     # Simply write to file before immediately closing it
-    open(f"{dir}/{str(datetime.date.today().isoformat())}", "w").close()
+    open(f"{directory}/{str(datetime.date.today().isoformat())}", "w").close()

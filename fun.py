@@ -1,4 +1,5 @@
 import secrets
+from typing import Optional
 
 import requests
 
@@ -8,7 +9,7 @@ from definitions import APP_ROOT
 config = Config.from_config_file(APP_ROOT / "config.yaml")
 
 
-def upload_to_transfersh(url, byte_like):
+def upload_to_transfersh(url, byte_like) -> Optional[str]:
     # Upload to self-hosted transfer.sh instance, and return upload url
     res = requests.post(url, files={secrets.token_hex(8): byte_like})
     if not res.ok:
@@ -17,7 +18,13 @@ def upload_to_transfersh(url, byte_like):
     return res.text
 
 
-def get_non_existent_cat():
+def get_non_existent_cat() -> Optional[str]:
+    if config is None:
+        print("[FAILED] Could not upload non existent cat, config missing.")
+        return None
+    if "fun" not in config:
+        print("[FAILED] Could not upload non existent cat, fun config missing.")
+        return None
     res = requests.get("https://thiscatdoesnotexist.com/")
     if not res.ok:
         print("[WARNING] Failed to retrieve non existent cat")
@@ -25,7 +32,13 @@ def get_non_existent_cat():
     return upload_to_transfersh(config.fun.transfersh_url, res.content)
 
 
-def get_real_cat():
+def get_real_cat() -> Optional[str]:
+    if config is None:
+        print("[FAILED] Could not upload real cat, config missing.")
+        return None
+    if "fun" not in config:
+        print("[FAILED] Could not upload real cat, fun config missing.")
+        return None
     try:
         image_url = requests.get(
             url="https://api.thecatapi.com/v1/images/search",

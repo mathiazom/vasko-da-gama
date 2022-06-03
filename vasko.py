@@ -1,8 +1,8 @@
 from datetime import datetime
-from pytz import timezone
 import sys
 import time
 import csv
+from typing import Optional, Tuple, List, Dict, Any
 
 import direct
 from config import Config
@@ -12,57 +12,73 @@ from schedule import is_scheduled, schedule_message
 from utils import write_checkpoint_file, timestamp_for_message_schedule
 
 config = Config.from_config_file(APP_ROOT / "config.yaml")
-tz = timezone(config.timezone)
 
 
-def get_weeks_cleaners():
+def get_weeks_cleaners(cleaning_schedule_file, communal_keyword) -> Optional[Tuple[str, str]]:
     current_week = int(datetime.today().strftime("%V"))
-    with open(config.cleaning_schedule, mode='r') as file:
+    with open(cleaning_schedule_file, mode='r') as file:
         for lines in csv.reader(file):
             if int(lines[0]) == current_week:
-                if lines[1] == config.communal_keyword:
-                    return config.communal_keyword
+                if lines[1] == communal_keyword:
+                    return communal_keyword
                 return lines[1], lines[2]
     return None
 
 
-def get_chores(is_communal):
-    if "chores" not in config:
-        return None
+def get_chores(chores_config, is_communal) -> Optional[List[str]]:
     chores = []
     if is_communal:
-        if "communal" not in config.chores:
+        if "communal" not in chores_config:
             return None
-        with open(config.chores.communal, mode='r') as file:
+        with open(chores_config.communal, mode='r') as file:
             chores.append(file.read())
     else:
-        if "pair" not in config.chores:
+        if "pair" not in chores_config:
             return None
-        for chores_file in config.chores.pair:
+        for chores_file in chores_config.pair:
             with open(chores_file, mode='r') as file:
                 chores.append(file.read())
     return chores
 
 
-def get_reminder(reminder_id):
-    cleaners = get_weeks_cleaners()
+def get_reminder(reminder_id) -> Optional[Dict[str, Any]]:
+    if config is None:
+        print("[FAILED] Config missing when retrieving reminder")
+        return None
+    if "cleaning_schedule" not in config:
+        print("[FAILED] Missing cleaning schedule in config")
+        return None
+    cleaners = get_weeks_cleaners(config.cleaning_schedule, config.communal_keyword)
     if cleaners is None:
         print("[FAILED] No cleaners found")
         return None
     print(f"[INFO] This weeks cleaners: {cleaners}")
     is_communal = cleaners == config.communal_keyword
-    return reminder_messages(
+    reminders = reminder_messages(
         cleaners,
         is_communal,
-        get_chores(is_communal)
-    )[reminder_id]
+        get_chores(config.chores, is_communal) if "chores" in config else None
+    )
+    if reminder_id not in reminders:
+        print(f"[FAILED] No reminder for id '{reminder_id}'")
+        return None
+    return reminders[reminder_id]
 
 
-def schedule_reminder(reminder_id):
+def schedule_reminder(reminder_id) -> None:
     reminder = get_reminder(reminder_id)
+    if reminder is None:
+        print("[FAILED] No reminder found, aborting.")
+        return
     timestamp = timestamp_for_message_schedule(reminder['schedule'])
     if timestamp < time.time():
         print("[WARNING] Scheduled time is in the past, skipping message.")
+        return
+    if config is None:
+        print("[FAILED] Could not schedule reminder, config missing")
+        return
+    if "slack" not in config:
+        print("[FAILED] Could not schedule reminder, Slack config missing")
         return
     if is_scheduled(config.slack.bot_token, config.slack.channel_id, timestamp):
         print("[WARNING] Message already scheduled, skipping.")
@@ -72,11 +88,21 @@ def schedule_reminder(reminder_id):
         write_checkpoint_file(config.checkpoints_dir)
 
 
-def post_reminder(reminder_id):
+def post_reminder(reminder_id) -> None:
+    reminder = get_reminder(reminder_id)
+    if reminder is None:
+        print("[FAILED] No reminder found, aborting.")
+        return
+    if config is None:
+        print("[FAILED] Could not post reminder, config missing")
+        return
+    if "slack" not in config:
+        print("[FAILED] Could not post reminder, Slack config missing")
+        return
     if direct.post_reminder(
             config.slack.bot_token,
             config.slack.channel_id,
-            get_reminder(reminder_id)
+            reminder
     ):
         write_checkpoint_file(config.checkpoints_dir)
 
