@@ -1,0 +1,34 @@
+---
+timezone: "Europe/Oslo"
+
+checkpoints_dir: "checkpoints"
+
+communal_keyword: "Fellesvask"
+cleaning_schedule: "<THIS-IS-REQUIRED>"
+
+slack:
+  bot_token: "<THIS-IS-REQUIRED>"
+  channel_id: "<THIS-IS-REQUIRED>"
+
+fun:
+  transfersh_url: "<THIS-IS-REQUIRED>"
+  cat_api_key: "<THIS-IS-REQUIRED>"
+
+cron:
+  vasko_dir: "/vasko-da-gama/"
+  python_path: "/opt/vasko/bin/python"
+  log_path: "/var/log/cron.log"
+  scheduling_schedule: "33 3 * * 1-5"
+
+reminders:
+  method: "direct"
+  schedule:
+    alpha:
+      weekday: 5
+      hour: 13
+      minute: 37
+    beta:
+      weekday: 7
+      hour: 12
+      minute: 0
+

@@ -8,6 +8,12 @@ def next_of_weekday(today, weekday):
     return today + datetime.timedelta((weekday - today.isoweekday()) % 7)
 
 
+def timestamp_for_message_schedule(message_schedule):
+    schedule_date = next_of_weekday(datetime.datetime.today(), message_schedule['weekday'])
+    schedule_datetime = schedule_date.replace(**message_schedule['time'])
+    return int(schedule_datetime.timestamp())
+
+
 def readable_delta(seconds):
     if seconds < 60:
         return "less than a minute"

@@ -1,19 +1,14 @@
-from fun import get_random_fun_fact, get_random_dad_joke, get_non_existent_cat, get_real_cat
-from main import COMMUNAL
+from fun import get_non_existent_cat, get_real_cat
 
 
-def reminder_messages(cleaners):
+def reminder_messages(cleaners, is_communal):
     real_cat = get_real_cat()
-    return [
-        {
-            'weekday': 5,
-            'time': {
-                'hour': 13, 'minute': 37, 'second': 0, 'microsecond': 0
-            },
+    return {
+        'alpha': {
             'text': "⏲🧹\n" +
                     (
                         f"Ukas vaskere er <@{cleaners[0]}> og <@{cleaners[1]}>."
-                        if cleaners != COMMUNAL else
+                        if not is_communal else
                         "Denne uka er det fellesvask <!channel>!"
                     ),
             "attachments": [
@@ -25,15 +20,11 @@ def reminder_messages(cleaners):
                 }
             ]
         },
-        {
-            'weekday': 7,
-            'time': {
-                'hour': 12, 'minute': 0, 'second': 0, 'microsecond': 0
-            },
+        'beta': {
             'text': "🧹🧼✨\n" +
                     (
                         f"<@{cleaners[0]}> og <@{cleaners[1]}>, husk at dere er ukas beærede vaskere!"
-                        if cleaners != COMMUNAL else
+                        if not is_communal else
                         "Minner om fellesvask denne uka <!channel>!"
                     ),
             "attachments": [
@@ -45,4 +36,4 @@ def reminder_messages(cleaners):
                 }
             ] if real_cat is not None else None
         }
-    ]
+    }
