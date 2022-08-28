@@ -2,7 +2,9 @@ from datetime import datetime
 import sys
 import time
 import csv
-from typing import Optional, Tuple, List, Dict, Any
+from typing import Optional, List, Dict, Any
+
+from munch import Munch
 
 import direct
 from config import Config
@@ -14,30 +16,46 @@ from utils import write_checkpoint_file, timestamp_for_message_schedule
 config = Config.from_config_file(APP_ROOT / "config.yaml")
 
 
-def get_weeks_cleaners(cleaning_schedule_file, communal_keyword) -> Optional[Tuple[str, str]]:
-    current_week = int(datetime.today().strftime("%V"))
+def get_current_week() -> int:
+    return int(datetime.today().strftime("%V"))
+
+
+def get_weeks_cleaners(cleaning_schedule_file, communal_keyword) -> Optional[List[str]]:
+    current_week = get_current_week()
     with open(cleaning_schedule_file, mode='r') as file:
-        for lines in csv.reader(file):
-            if int(lines[0]) == current_week:
-                if lines[1] == communal_keyword:
+        for line in csv.reader(file):
+            if int(line[0]) == current_week:
+                if line[1] == communal_keyword:
                     return communal_keyword
-                return lines[1], lines[2]
+                return line[1:]
     return None
 
 
-def get_chores(chores_config, is_communal) -> Optional[List[str]]:
-    chores = []
+def get_weeks_special_chore(special_chores_file) -> str:
+    current_week = get_current_week()
+    with open(special_chores_file, mode='r') as file:
+        chores = []
+        for line in csv.reader(file):
+            chores.append(line)
+        return "- " + "\n- ".join(chores[current_week % len(chores)])
+
+
+def get_chores(chores_config, is_communal) -> Optional[Dict[str, any]]:
+    chores = Munch()
     if is_communal:
         if "communal" not in chores_config:
             return None
         with open(chores_config.communal, mode='r') as file:
-            chores.append(file.read())
+            chores.communal = file.read()
     else:
         if "pair" not in chores_config:
             return None
+        chores.pair = []
         for chores_file in chores_config.pair:
             with open(chores_file, mode='r') as file:
-                chores.append(file.read())
+                chores.pair.append(file.read())
+        if "special" in chores_config:
+            chores.special = get_weeks_special_chore(chores_config.special)
     return chores
 
 

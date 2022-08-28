@@ -3,12 +3,24 @@ from typing import Dict, Any, List, Optional
 from fun import get_non_existent_cat, get_real_cat
 
 
+def slack_user_list_string(users):
+    if users is None or len(users) == 0:
+        return None
+    if len(users) == 1:
+        return f"<@{users[0]}>"
+    else:
+        return f"{', '.join([f'<@{u}>' for u in users[:-1]])} og <@{users[-1]}>"
+
+
 def get_chores_messages(cleaners, is_communal, chores) -> Optional[List[str]]:
     if chores is None:
         return None
     if is_communal:
-        return chores
-    return [f"<@{cleaners[i]}>\n{chores[i]}" for i in [0, 1]]
+        return chores.communal
+    messages = [f"<@{cleaner}>\n{chores.pair[i]}" for i, cleaner in enumerate(cleaners[:2])]
+    if "special" in chores:
+        messages.append(f"<@{cleaners[2]}>\n{chores.special}")
+    return messages
 
 
 def reminder_messages(cleaners, is_communal, chores) -> Dict[str, Any]:
@@ -19,7 +31,7 @@ def reminder_messages(cleaners, is_communal, chores) -> Dict[str, Any]:
         'alpha': {
             'text': ":timer_clock::broom:\n" +
                     (
-                        f"Ukas vaskere er <@{cleaners[0]}> og <@{cleaners[1]}>"
+                        f"Ukas vaskere er {slack_user_list_string(cleaners)}"
                         if not is_communal else
                         f"Denne uka er det fellesvask <!channel>!"
                     ) + ("\nOppgaver i :thread:" if chores_messages is not None else ""),
@@ -36,7 +48,7 @@ def reminder_messages(cleaners, is_communal, chores) -> Dict[str, Any]:
         'beta': {
             'text': ":broom::soap::sparkles:\n" +
                     (
-                        f"<@{cleaners[0]}> og <@{cleaners[1]}>, husk at dere er ukas beærede vaskere!"
+                        f"{slack_user_list_string(cleaners)}, husk at dere er ukas beærede vaskere!"
                         if not is_communal else
                         "Minner om fellesvask denne uka <!channel>!"
                     ) + ("\nOppgaver i :thread:" if chores_messages is not None else ""),
