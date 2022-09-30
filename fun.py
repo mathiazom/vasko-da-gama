@@ -15,7 +15,7 @@ def upload_to_transfersh(url: str, filename: str, byte_like) -> Optional[str]:
     if not res.ok:
         print(f"[WARNING] Failed to upload file to transfer.sh instance at {url}")
         return None
-    return res.text
+    return res.text.strip()
 
 
 def get_non_existent_cat() -> Optional[str]:
