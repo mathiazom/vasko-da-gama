@@ -27,6 +27,7 @@ types-requests = "2.27.30"
 types-urllib3 = "1.26.15"
 typing-extensions = "4.2.0"
 urllib3 = "1.26.7"
+praw = "^7.6.1"
 
 
 [build-system]

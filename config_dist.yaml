@@ -12,7 +12,10 @@ slack:
 
 fun:
   transfersh_url: "<THIS-IS-REQUIRED>"
-  cat_api_key: "<THIS-IS-REQUIRED>"
+#  cat_api_key: "<deprecated>"
+  reddit:
+    client_id: "<THIS-IS-REQUIRED>"
+    client_secret: "<THIS-IS-REQUIRED>"
 
 cron:
   vasko_dir: "/vasko-da-gama/"

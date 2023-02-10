@@ -1,6 +1,6 @@
 from typing import Dict, Any, List, Optional
 
-from fun import get_non_existent_cat, get_real_cat
+from fun import get_top_image_from_subreddit
 
 
 def slack_user_list_string(users):
@@ -24,8 +24,25 @@ def get_chores_messages(cleaners, is_communal, chores) -> Optional[List[str]]:
 
 
 def reminder_messages(cleaners, is_communal, chores) -> Dict[str, Any]:
-    real_cat = get_real_cat()
-    non_existent_cat = get_non_existent_cat()
+    alpha = {
+        "image_url": get_top_image_from_subreddit("tuckedinkitties"),
+        "pretext": "Ukas inntullede kattunge:",
+        "fallback": "😺🛏️"
+    }
+    beta_image = get_top_image_from_subreddit("CatsOnPizza")
+    if beta_image is not None:
+        beta = {
+            "image_url": beta_image,
+            "pretext": "Ukas katt på pizza:",
+            "fallback": "😺🍕"
+        }
+    else:
+        # Fallback to supermodel
+        beta = {
+            "image_url": get_top_image_from_subreddit("SupermodelCats"),
+            "pretext": "Ukas supermodell:",
+            "fallback": "😺💫"
+        }
     chores_messages = get_chores_messages(cleaners, is_communal, chores)
     return {
         'alpha': {
@@ -37,12 +54,10 @@ def reminder_messages(cleaners, is_communal, chores) -> Dict[str, Any]:
                     ) + ("\nOppgaver i :thread:" if chores_messages is not None else ""),
             "attachments": [
                 {
-                    "fallback": "Ukas ikke-eksisterende katt",
-                    "pretext": "Ukas ikke-eksisterende katt:",
-                    "color": "#039BE5",
-                    "image_url": non_existent_cat
+                    **alpha,
+                    "color": "#039BE5"
                 }
-            ] if non_existent_cat is not None else None,
+            ] if alpha["image_url"] is not None else None,
             "chores": chores_messages
         },
         'beta': {
@@ -54,12 +69,10 @@ def reminder_messages(cleaners, is_communal, chores) -> Dict[str, Any]:
                     ) + ("\nOppgaver i :thread:" if chores_messages is not None else ""),
             "attachments": [
                 {
-                    "fallback": "Ukas organiske katt",
-                    "pretext": "Ukas organiske katt:",
-                    "color": "#2eb886",
-                    "image_url": real_cat
+                    **beta,
+                    "color": "#2eb886"
                 }
-            ] if real_cat is not None else None,
+            ] if beta["image_url"] is not None else None,
             "chores": chores_messages
         }
     }

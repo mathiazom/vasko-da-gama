@@ -1,6 +1,8 @@
 import secrets
 from typing import Optional
 
+import praw
+import prawcore.exceptions
 import requests
 
 from config import Config
@@ -16,6 +18,39 @@ def upload_to_transfersh(url: str, filename: str, byte_like) -> Optional[str]:
         print(f"[WARNING] Failed to upload file to transfer.sh instance at {url}")
         return None
     return res.text.strip()
+
+
+def get_top_image_from_subreddit(subreddit: str) -> Optional[str]:
+    if config is None or "fun" not in config or "reddit" not in config.fun:
+        print("[FAILED] Could not retrieve reddit image, config missing.")
+        return None
+    reddit = praw.Reddit(
+        client_id=config.fun.reddit.client_id,
+        client_secret=config.fun.reddit.client_secret,
+        user_agent="Chores schedule reminder Slack bot (by u/vaskodg)"
+    )
+    image_content = None
+    try:
+        for s in reddit.subreddit(subreddit).top(time_filter="week", limit=20):
+            if not hasattr(s, "post_hint") or s.post_hint != "image" or not hasattr(s, "url"):
+                continue
+            image_url = s.url
+            if image_url is None:
+                continue
+            res = requests.get(image_url)
+            if not res.ok:
+                continue
+            image_content = res.content
+            break
+    except prawcore.PrawcoreException:
+        return None
+    if image_content is None:
+        return
+    return upload_to_transfersh(
+        config.fun.transfersh_url,
+        f"{secrets.token_hex(4)}.jpg",
+        image_content
+    )
 
 
 def get_non_existent_cat() -> Optional[str]:
